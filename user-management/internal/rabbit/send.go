@@ -42,9 +42,8 @@ func SendMessage(data []byte, username string) error {
 		false,
 		false,
 		amqp.Publishing{
-			ContentType:  "text/plain",
-			Body:         data,
-			DeliveryMode: amqp.Persistent,
+			ContentType: "application/json",
+			Body:        data,
 		})
 	if err != nil {
 		return errors.Wrap(err, "rabbit publish message")

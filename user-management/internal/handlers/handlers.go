@@ -29,12 +29,13 @@ func NewHandlers(r *Repository) {
 }
 
 // renderJSON renders 'v' as JSON and writes it as a response into w.
-func renderJSON(w http.ResponseWriter, v interface{}) {
+func renderJSON(w http.ResponseWriter, v interface{}) []byte {
 	js, err := json.Marshal(v)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+	return js
 }

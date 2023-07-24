@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+type message struct {
+	ID    string
+	Token string
+}
+
 func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	var user models.Users
 
@@ -29,8 +34,10 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	renderJSON(w, token)
-	err = rabbit.SendMessage([]byte(token), username)
+	messageSend := message{ID: id, Token: token}
+
+	messageJSON := renderJSON(w, messageSend)
+	err = rabbit.SendMessage(messageJSON, username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
