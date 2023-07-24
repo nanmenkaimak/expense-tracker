@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func SendMessage(data []byte, id string) error {
+func SendMessage(data []byte, username string) error {
 	conn, err := amqp.Dial(os.Getenv("RABBITMQ"))
 	if err != nil {
 		return errors.Wrap(err, "rabbit connect")
@@ -23,7 +23,7 @@ func SendMessage(data []byte, id string) error {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		fmt.Sprintf("token_%s", id),
+		fmt.Sprintf("token_%s", username),
 		false,
 		false,
 		false,

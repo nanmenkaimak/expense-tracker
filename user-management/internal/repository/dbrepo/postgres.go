@@ -24,22 +24,22 @@ func (m *postgresDBRepo) CreateUser(newUser models.Users) (string, error) {
 	return userID, nil
 }
 
-func (m *postgresDBRepo) Authenticate(email string, password string) (string, error) {
-	var user models.LoginUser
+func (m *postgresDBRepo) Authenticate(email string, password string) (string, string, error) {
+	var user models.Users
 
 	err := m.DB.Get(&user,
-		`select id, password from users where email = $1`, email)
+		`select id, username, password from users where email = $1`, email)
 	if err != nil {
-		return "", errors.Wrap(err, "select auth")
+		return "", "", errors.Wrap(err, "select auth")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", errors.Wrap(err, "incorrect password")
+		return "", "", errors.Wrap(err, "incorrect password")
 	} else if err != nil {
-		return "", errors.Wrap(err, "password auth")
+		return "", "", errors.Wrap(err, "password auth")
 	}
 
-	return user.ID, nil
+	return user.ID, user.Username, nil
 }
 
 func hashPassword(password string) (string, error) {

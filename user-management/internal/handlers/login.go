@@ -9,7 +9,7 @@ import (
 )
 
 func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
-	var user models.LoginUser
+	var user models.Users
 
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
@@ -18,7 +18,7 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := m.DB.Authenticate(user.Email, user.Password)
+	id, username, err := m.DB.Authenticate(user.Email, user.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -30,7 +30,7 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	renderJSON(w, token)
-	err = rabbit.SendMessage([]byte(token), id)
+	err = rabbit.SendMessage([]byte(token), username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
