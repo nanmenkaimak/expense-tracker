@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
 	"github.com/nanmenkaimak/report-management/internal/rabbit"
 	"github.com/pkg/errors"
 	"net/http"
@@ -14,7 +13,7 @@ type message struct {
 }
 
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	username := chi.URLParam(r, "username")
+	username := r.URL.Query().Get("username")
 	data, err := rabbit.ReceiveMessage(username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -12,7 +12,7 @@ func routes() http.Handler {
 
 	mux.Use(middleware.Logger)
 
-	mux.Get("/home/{username}", handlers.Repo.Home)
+	mux.Get("/home", handlers.Repo.Home)
 
 	mux.Route("/{username}", func(r chi.Router) {
 		r.Use(Auth)
