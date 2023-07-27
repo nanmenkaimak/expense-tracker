@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/go-chi/chi/v5"
 	"github.com/nanmenkaimak/expense-management/internal/models"
 	"github.com/nanmenkaimak/expense-management/internal/rabbit"
 	"net/http"
@@ -19,6 +17,9 @@ func (m *Repository) CreateExpenses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID := r.Context().Value("id").(string)
+	newExpense.UserID = userID
+
 	_, err := m.DB.CreateExpense(newExpense)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -33,7 +34,7 @@ type message struct {
 }
 
 func (m *Repository) Expenses(w http.ResponseWriter, r *http.Request) {
-	username := chi.URLParam(r, "username")
+	username := r.URL.Query().Get("username")
 	data, err := rabbit.ReceiveMessage(username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -41,5 +42,5 @@ func (m *Repository) Expenses(w http.ResponseWriter, r *http.Request) {
 	}
 	var messageRes message
 	json.Unmarshal([]byte(data), &messageRes)
-	fmt.Println(messageRes.ID)
+	renderJSON(w, messageRes)
 }
