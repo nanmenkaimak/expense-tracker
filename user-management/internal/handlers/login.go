@@ -19,18 +19,18 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
 	id, username, err := m.DB.Authenticate(user.Email, user.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 	token, err := JWT.GenerateToken(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	messageJSON := renderJSON(w, messageSend)
 	err = rabbit.SendMessage(messageJSON, username)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
 }

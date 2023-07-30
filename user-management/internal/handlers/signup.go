@@ -16,27 +16,34 @@ func (m *Repository) SignUp(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&newUser); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
 	ok := govalidator.IsEmail(newUser.Email)
 	if !ok {
-		http.Error(w, errors.New("invalid email").Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: errors.New("invalid email").Error()}, http.StatusBadRequest)
 		return
 	}
 	err := validPassword(newUser.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
-	_, err = m.DB.CreateUser(newUser)
+	id, err := m.DB.CreateUser(newUser)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
-	renderJSON(w, newUser)
+
+	type responseSignUp struct {
+		ID string `json:"id"`
+	}
+
+	renderJSON(w, responseSignUp{
+		ID: id,
+	})
 }
 
 func validPassword(s string) error {
