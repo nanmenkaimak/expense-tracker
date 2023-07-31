@@ -13,19 +13,25 @@ func (m *Repository) CreateExpenses(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&newExpense); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusBadRequest)
 		return
 	}
 
 	userID := r.Context().Value("id").(string)
 	newExpense.UserID = userID
 
-	_, err := m.DB.CreateExpense(newExpense)
+	id, err := m.DB.CreateExpense(newExpense)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
-	renderJSON(w, newExpense)
+	type responseCreate struct {
+		ID string `json:"id"`
+	}
+
+	renderJSON(w, responseCreate{
+		ID: id,
+	})
 }
 
 type message struct {
