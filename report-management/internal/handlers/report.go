@@ -15,17 +15,21 @@ func (m *Repository) ReportByDate(w http.ResponseWriter, r *http.Request) {
 
 	startTime, err := time.Parse(layout, startDate)
 	if err != nil {
-		http.Error(w, errors.New("parse start date").Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: errors.New("parse start date").Error()}, http.StatusBadRequest)
 		return
 	}
 
 	endTime, err := time.Parse(layout, endDate)
 	if err != nil {
-		http.Error(w, errors.New("parse end date").Error(), http.StatusBadRequest)
+		newErrorResponse(w, errorResponse{Message: errors.New("parse end date").Error()}, http.StatusBadRequest)
 		return
 	}
 
 	total, expense, income, err := m.DB.ReportByDate(startTime, endTime, userID)
+	if err != nil {
+		newErrorResponse(w, errorResponse{Message: err.Error()}, http.StatusInternalServerError)
+		return
+	}
 
 	type reportMoney struct {
 		Total   int
